@@ -230,8 +230,11 @@ void PylonROS2CameraParameter::readFromRosParameterServer(rclcpp::Node& nh)
     // > 0: Exposure time in microseconds
     RCLCPP_DEBUG(LOGGER, "---> exposure");
     
-    this->exposure_given_ = nh.has_parameter("exposure");
-    if (!this->exposure_given_)
+    // Use the parameter overrides map (not has_parameter) to reliably detect user-supplied values.
+    const auto & param_overrides = nh.get_node_parameters_interface()->get_parameter_overrides();
+    
+    this->exposure_given_ = (param_overrides.find("exposure") != param_overrides.end());
+    if (!nh.has_parameter("exposure"))
     {
         nh.declare_parameter<double>("exposure", 10000.0);
     }
@@ -241,8 +244,8 @@ void PylonROS2CameraParameter::readFromRosParameterServer(rclcpp::Node& nh)
     // gain
     RCLCPP_DEBUG(LOGGER, "---> gain");
     
-    this->gain_given_ = nh.has_parameter("gain");
-    if (!this->gain_given_)
+    this->gain_given_ = (param_overrides.find("gain") != param_overrides.end());
+    if (!nh.has_parameter("gain"))
     {
         nh.declare_parameter<double>("gain", 0.5);
     }
@@ -252,8 +255,8 @@ void PylonROS2CameraParameter::readFromRosParameterServer(rclcpp::Node& nh)
     // gamma
     RCLCPP_DEBUG(LOGGER, "---> gamma");
     
-    this->gamma_given_ = nh.has_parameter("gamma");
-    if (!this->gamma_given_)
+    this->gamma_given_ = (param_overrides.find("gamma") != param_overrides.end());
+    if (!nh.has_parameter("gamma"))
     {
         nh.declare_parameter<double>("gamma", 1.0);
     }
@@ -293,13 +296,12 @@ void PylonROS2CameraParameter::readFromRosParameterServer(rclcpp::Node& nh)
     // brightness
     RCLCPP_DEBUG(LOGGER, "---> brightness");
 
-    this->brightness_given_ = nh.has_parameter("brightness");
-
-    if (!this->brightness_given_)
+    // Detect whether the user actually supplied 'brightness' (yaml/CLI override).
+    this->brightness_given_ = (param_overrides.find("brightness") != param_overrides.end());
+    if (!nh.has_parameter("brightness"))
     {
         nh.declare_parameter<int>("brightness", 100);
     }
-    
     nh.get_parameter("brightness", this->brightness_);
 
     if (this->gain_given_ && this->exposure_given_)
