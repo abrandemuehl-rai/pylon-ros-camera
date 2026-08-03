@@ -4873,15 +4873,18 @@ std::string PylonROS2CameraImpl<CameraTraitT>::getPTPStatus(int64_t& offset_from
 
     try
     {
-        if (GenApi::IsAvailable(cam_->PtpServoStatus))
+        if (GenApi::IsAvailable(cam_->PtpStatus))
         {
             cam_->PtpDataSetLatch();
             Basler_UniversalCameraParams::PtpStatusEnums status_enum = cam_->PtpStatus.GetValue();
-            Basler_UniversalCameraParams::PtpServoStatusEnums servo_status_enum = cam_->PtpServoStatus.GetValue();
             offset_from_master  = cam_->PtpOffsetFromMaster.GetValue();
 
             status = cam_->PtpStatus.ToString(status_enum);
-            servo_status = cam_->PtpServoStatus.ToString(servo_status_enum);
+            if (GenApi::IsAvailable(cam_->PtpServoStatus))
+            {
+                Basler_UniversalCameraParams::PtpServoStatusEnums servo_status_enum = cam_->PtpServoStatus.GetValue();
+                servo_status = cam_->PtpServoStatus.ToString(servo_status_enum);
+            }
 
             return "done";
         }
